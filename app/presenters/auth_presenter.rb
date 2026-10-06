@@ -20,7 +20,8 @@ class AuthPresenter
   end
 
   def signup_props
-    referrer = User.find_by_username(params[:referrer]) if params[:referrer].present?
+    # ?referrer[x]=… parses to a Hash, which the username lookup can't quote into SQL.
+    referrer = User.find_by_username(params[:referrer]) if params[:referrer].is_a?(String) && params[:referrer].present?
     number_of_creators, total_made = signup_stats
     login_props.merge(
       referrer: referrer ? {
