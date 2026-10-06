@@ -20,7 +20,7 @@ class OfferCodesController < ApplicationController
   }.freeze
 
   def compute_discount
-    result = OfferCodeDiscountComputingService.new(OfferCode.normalize_code(params[:code]), params[:products], buyer: logged_in_user).process
+    result = OfferCodeDiscountComputingService.new(OfferCode.normalize_code(params[:code]), cart_products_param, buyer: logged_in_user).process
 
     response = if result[:error_code].present?
       { valid: false, error_code: result[:error_code], error_message: INELIGIBILITY_MESSAGES[result[:error_code]] }
@@ -36,4 +36,13 @@ class OfferCodesController < ApplicationController
 
     render json: response
   end
+
+  private
+    # The service walks a hash of per-line hashes; ?products[]=… or ?products[x]=… would raise inside it.
+    def cart_products_param
+      products = params[:products]
+      return {} unless products.is_a?(ActionController::Parameters)
+
+      products.select { |_key, product| product.is_a?(Hash) || product.is_a?(ActionController::Parameters) }
+    end
 end

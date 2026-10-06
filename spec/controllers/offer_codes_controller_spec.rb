@@ -157,5 +157,21 @@ describe OfferCodesController do
 
       expect(response.parsed_body).to eq({ "error_message" => "Sorry, the discount code you wish to use is invalid.", "error_code" => "invalid_offer", "valid" => false })
     end
+
+    it "returns an invalid error in response when products param is an array" do
+      get :compute_discount, params: { code: offer_code.code, products: [product.unique_permalink] }
+
+      expect(response.parsed_body).to eq({ "error_message" => "Sorry, the discount code you wish to use is invalid.", "error_code" => "invalid_offer", "valid" => false })
+    end
+
+    it "ignores product lines that are not hashes" do
+      get :compute_discount, params: {
+        code: offer_code.code,
+        products: { "bad" => "1", product.unique_permalink => { permalink: product.unique_permalink, quantity: "1" } },
+      }
+
+      expect(response.parsed_body["valid"]).to eq(true)
+      expect(response.parsed_body["products_data"].keys).to eq([product.unique_permalink])
+    end
   end
 end
