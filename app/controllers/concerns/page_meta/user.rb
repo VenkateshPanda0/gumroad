@@ -5,11 +5,13 @@ module PageMeta::User
 
   include PageMeta::Base
 
+  PROFILE_META_DESCRIPTION_MAX_LENGTH = 300
+
   private
     # The custom-HTML profile wrapper builds its own <head> and can't use
     # set_meta_tag, so both render sites read this to stay in sync.
     def profile_meta_description(user)
-      return user.bio.squish.first(300) if user.bio.present?
+      return user.bio.squish.truncate(PROFILE_META_DESCRIPTION_MAX_LENGTH, separator: " ") if user.bio.present?
 
       "Get the latest products and updates from #{user.name_or_username} on Gumroad."
     end

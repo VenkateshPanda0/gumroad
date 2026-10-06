@@ -421,7 +421,14 @@ describe UsersController do
       @request.host = seller.subdomain
       seller.update!(bio: "f" * 301)
       get :show, params: { username: seller.username }
-      expect(response.body).to have_selector("meta[name='description'][content='#{"f" * 300}']", visible: false)
+      expect(response.body).to have_selector("meta[name='description'][content='#{"f" * 297}...']", visible: false)
+    end
+
+    it "cuts a long bio on a word boundary" do
+      @request.host = seller.subdomain
+      seller.update!(bio: "word " * 80)
+      get :show, params: { username: seller.username }
+      expect(response.body).to have_selector("meta[name='description'][content='#{"word " * 58}word...']", visible: false)
     end
 
     describe "share card meta tags" do
