@@ -3132,6 +3132,18 @@ describe UrlRedirectsController, inertia: true do
       expect(flash[:alert]).to eq("Please enter the correct email address used to purchase this product")
     end
 
+    it "redirects to the check_purchaser page when the email is sent as an array" do
+      user = create(:user)
+
+      expect do
+        sign_in user
+        post :change_purchaser, params: { id: @token, next: "/r/#{@token}", email: [@url_redirect.purchase.email] }
+      end.not_to change { @url_redirect.purchase.reload.purchaser }
+
+      expect(response).to redirect_to(url_redirect_check_purchaser_path(@token, next: "/r/#{@token}"))
+      expect(flash[:alert]).to eq("Please enter the correct email address used to purchase this product")
+    end
+
     it "does not change the purchaser of a reassignment-locked purchase even when the email is correct" do
       user = create(:user)
       @url_redirect.purchase.update!(is_reassignment_locked: true)

@@ -266,7 +266,9 @@ class UrlRedirectsController < ApplicationController
   end
 
   def change_purchaser
-    if params[:email].blank? || !ActiveSupport::SecurityUtils.secure_compare(params[:email].strip.downcase, @url_redirect.purchase.email.strip.downcase)
+    email = params[:email]
+    # A crafted `email[]=` arrives as an Array; treat it as a wrong email rather than 500ing on `.strip`.
+    if !email.is_a?(String) || email.blank? || !ActiveSupport::SecurityUtils.secure_compare(email.strip.downcase, @url_redirect.purchase.email.strip.downcase)
       flash[:alert] = "Please enter the correct email address used to purchase this product"
       return redirect_to url_redirect_check_purchaser_path({ id: @url_redirect.token, next: params[:next].presence }.compact)
     end
