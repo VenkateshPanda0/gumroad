@@ -85,6 +85,15 @@ describe AuthPresenter do
       end
     end
 
+    context "when the referrer param is not a string" do
+      let(:referrer) { create(:user) }
+      let(:params) { ActionController::Parameters.new(referrer: { "x" => referrer.username }) }
+
+      it "ignores it" do
+        expect(presenter.signup_props).to include(referrer: nil)
+      end
+    end
+
     context "with a team invitation" do
       let(:team_invitation) { create(:team_invitation) }
       let(:params) do
