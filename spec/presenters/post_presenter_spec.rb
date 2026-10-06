@@ -135,12 +135,18 @@ describe PostPresenter do
   end
 
   describe ".snippet" do
-    it "returns a sanitized version of the message limited to 150 characters" do
-      message = Faker::Lorem.paragraphs(number: 10).join
+    it "returns a sanitized version of the message limited to 150 characters, cut on a word boundary" do
+      message = Faker::Lorem.paragraphs(number: 10).join(" ")
       post = create(:published_installment, seller: @user, message:)
       pundit_user = SellerContext.new(user: @user, seller: @user)
       presenter = PostPresenter.new(pundit_user:, post:, purchase_id_param: nil)
-      expect(presenter.snippet).to eq(message.first(150))
+
+      snippet = presenter.snippet
+      kept = snippet.delete_suffix("...")
+      expect(snippet.length).to be <= 150
+      expect(snippet).to end_with("...")
+      expect(message).to start_with(kept)
+      expect(message[kept.length]).to eq(" ")
     end
 
     it "snips post the sanitization and retains more information" do
@@ -148,7 +154,7 @@ describe PostPresenter do
       post = create(:published_installment, seller: @user, message:)
       pundit_user = SellerContext.new(user: @user, seller: @user)
       presenter = PostPresenter.new(pundit_user:, post:, purchase_id_param: nil)
-      expect(presenter.snippet).to eq("Today, we're launching the Gumroad creator dashboard app for Android. You can download it from the Play store here: https://play.google.com/store/apps")
+      expect(presenter.snippet).to eq("Today, we're launching the Gumroad creator dashboard app for Android. You can download it from the Play store here:...")
     end
   end
 

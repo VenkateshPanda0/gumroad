@@ -4,6 +4,7 @@ class PostPresenter
   include UsersHelper
 
   RECENT_UPDATES_LIMIT = 5
+  SNIPPET_MAX_LENGTH = 150
   delegate :link, :seller, :id, :message, to: :post, allow_nil: true
   attr_reader :post, :purchase, :pundit_user, :purchase_id_param, :visible_posts
 
@@ -35,7 +36,8 @@ class PostPresenter
   end
 
   def snippet
-    TextScrubber.format(message).squish.first(150)
+    # Link previews show this verbatim as og/twitter:description, so cut on a word boundary.
+    TextScrubber.format(message).squish.truncate(SNIPPET_MAX_LENGTH, separator: " ")
   end
 
   def social_image
