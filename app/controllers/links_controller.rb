@@ -146,6 +146,8 @@ class LinksController < ApplicationController
   end
 
   def show
+    # ?quantity[]=1 parses to an Array or Hash, and every quantity reader below calls #to_i on it.
+    params.delete(:quantity) unless params[:quantity].nil? || params[:quantity].is_a?(String)
     return redirect_to custom_domain_coffee_path if @product.native_type == Link::NATIVE_TYPE_COFFEE
     # Force a preload of all association data used in rendering
     preload_product
